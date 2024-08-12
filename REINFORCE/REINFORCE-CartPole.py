@@ -36,7 +36,7 @@ class Pi(nn.Module):
         return pdparam
 
     def act(self, state):
-        x = torch.from_numpy(state.astype(np.float32))
+        x = torch.from_numpy(state)
         pdparam = self.forward(x)
         pd = Categorical(logits = pdparam)
         action = pd.sample()
@@ -61,16 +61,16 @@ def train(pi, optimizer):
     return loss
 
 def main():
-    env = gymnasium.make('CartPole-v0')
+    env = gymnasium.make('CartPole-v1')
     in_dim = env.observation_space.shape[0]
-    out_dim = env.action_space.shape[0]
+    out_dim = env.action_space.shape
     pi = Pi(in_dim, out_dim)
     optimizer = optim.Adam(pi.parameters(), lr=.01)
     for epi in range(300):
-        state = env.reset()
+        state = env.reset()[0]
         for t in range(200):
             action = pi.act(state)
-            state, reward, done, _ = env.step(action)
+            state, reward, done, _, _ = env.step(action)
             pi.rewards.append(reward)
             env.render()
             if done:
